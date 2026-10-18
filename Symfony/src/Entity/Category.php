@@ -2,31 +2,39 @@
 
 namespace App\Entity;
 
-use App\Repository\ProductRepository;
+use App\Repository\CategoryRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: ProductRepository::class)]
-class Product
+#[ORM\Entity(repositoryClass: CategoryRepository::class)]
+#[ORM\Table(name: 'categories')]
+#[UniqueEntity(fields: ['name'])]
+class Category
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 100, unique: true)]
     #[Assert\NotBlank]
-    #[Assert\Length(max: 255)]
+    #[Assert\Length(max: 100)]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Assert\NotBlank]
-    #[Assert\PositiveOrZero]
-    private ?string $price = null;
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'category')]
+    private Collection $events;
+
+    public function __construct()
+    {
+        $this->events = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -57,15 +65,18 @@ class Product
         return $this;
     }
 
-    public function getPrice(): ?string
+    public function getEvents(): Collection
     {
-        return $this->price;
+        return $this->events;
     }
 
-    public function setPrice(?string $price): static
+    public function toArray(): array
     {
-        $this->price = $price;
-
-        return $this;
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'events_count' => $this->events->count(),
+        ];
     }
 }
