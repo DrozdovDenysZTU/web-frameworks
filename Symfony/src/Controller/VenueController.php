@@ -13,9 +13,15 @@ use Symfony\Component\Routing\Attribute\Route;
 class VenueController extends ApiController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(VenueRepository $repository): JsonResponse
+    public function index(VenueRepository $repository, Request $request): JsonResponse
     {
-        return $this->list($repository->findAll());
+        return $this->paginate($repository->createQueryBuilder('v')->orderBy('v.id'), $request, [
+            'id' => ['id', self::FILTER_INT],
+            'name' => ['name', self::FILTER_LIKE],
+            'address' => ['address', self::FILTER_LIKE],
+            'city' => ['city', self::FILTER_LIKE],
+            'capacity' => ['capacity', self::FILTER_NUMBER],
+        ]);
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]

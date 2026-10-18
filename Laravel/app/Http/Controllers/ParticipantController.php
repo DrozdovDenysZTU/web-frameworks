@@ -9,9 +9,17 @@ use Illuminate\Validation\Rule;
 
 class ParticipantController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Participant::withCount('registrations')->get());
+        return $this->paginate(Participant::withCount('registrations')->orderBy('id'), $request, [
+            'id' => self::FILTER_INT,
+            'first_name' => self::FILTER_LIKE,
+            'last_name' => self::FILTER_LIKE,
+            'email' => self::FILTER_LIKE,
+            'phone' => self::FILTER_LIKE,
+            'created_at' => self::FILTER_DATE,
+            'updated_at' => self::FILTER_DATE,
+        ]);
     }
 
     public function store(Request $request): JsonResponse

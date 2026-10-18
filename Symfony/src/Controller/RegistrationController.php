@@ -17,13 +17,13 @@ class RegistrationController extends ApiController
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(RegistrationRepository $repository, Request $request): JsonResponse
     {
-        $criteria = array_filter([
-            'event' => $request->query->get('event_id'),
-            'participant' => $request->query->get('participant_id'),
-            'status' => $request->query->get('status'),
-        ], static fn ($value) => $value !== null);
-
-        return $this->list($repository->findBy($criteria));
+        return $this->paginate($repository->createQueryBuilder('r')->orderBy('r.id'), $request, [
+            'id' => ['id', self::FILTER_INT],
+            'event_id' => ['event', self::FILTER_INT],
+            'participant_id' => ['participant', self::FILTER_INT],
+            'status' => ['status', self::FILTER_EXACT],
+            'registered_at' => ['registeredAt', self::FILTER_DATE],
+        ]);
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]

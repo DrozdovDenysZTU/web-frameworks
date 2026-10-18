@@ -9,9 +9,15 @@ use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Category::withCount('events')->get());
+        return $this->paginate(Category::withCount('events')->orderBy('id'), $request, [
+            'id' => self::FILTER_INT,
+            'name' => self::FILTER_LIKE,
+            'description' => self::FILTER_LIKE,
+            'created_at' => self::FILTER_DATE,
+            'updated_at' => self::FILTER_DATE,
+        ]);
     }
 
     public function store(Request $request): JsonResponse

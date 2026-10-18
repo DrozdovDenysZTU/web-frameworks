@@ -8,9 +8,17 @@ use Illuminate\Http\Request;
 
 class VenueController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Venue::withCount('events')->get());
+        return $this->paginate(Venue::withCount('events')->orderBy('id'), $request, [
+            'id' => self::FILTER_INT,
+            'name' => self::FILTER_LIKE,
+            'address' => self::FILTER_LIKE,
+            'city' => self::FILTER_LIKE,
+            'capacity' => self::FILTER_NUMBER,
+            'created_at' => self::FILTER_DATE,
+            'updated_at' => self::FILTER_DATE,
+        ]);
     }
 
     public function store(Request $request): JsonResponse

@@ -18,13 +18,17 @@ class EventController extends ApiController
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(EventRepository $repository, Request $request): JsonResponse
     {
-        $criteria = array_filter([
-            'category' => $request->query->get('category_id'),
-            'venue' => $request->query->get('venue_id'),
-            'organizer' => $request->query->get('organizer_id'),
-        ], static fn ($value) => $value !== null);
-
-        return $this->list($repository->findBy($criteria, ['startAt' => 'ASC']));
+        return $this->paginate($repository->createQueryBuilder('e')->orderBy('e.startAt')->addOrderBy('e.id'), $request, [
+            'id' => ['id', self::FILTER_INT],
+            'title' => ['title', self::FILTER_LIKE],
+            'description' => ['description', self::FILTER_LIKE],
+            'start_at' => ['startAt', self::FILTER_DATE],
+            'end_at' => ['endAt', self::FILTER_DATE],
+            'price' => ['price', self::FILTER_NUMBER],
+            'category_id' => ['category', self::FILTER_INT],
+            'venue_id' => ['venue', self::FILTER_INT],
+            'organizer_id' => ['organizer', self::FILTER_INT],
+        ]);
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
