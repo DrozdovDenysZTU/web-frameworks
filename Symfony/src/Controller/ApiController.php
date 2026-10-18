@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 abstract class ApiController extends AbstractController
@@ -28,7 +30,22 @@ abstract class ApiController extends AbstractController
     public function __construct(
         protected readonly EntityManagerInterface $em,
         protected readonly ValidatorInterface $validator,
+        protected readonly UserPasswordHasherInterface $passwordHasher,
     ) {
+    }
+
+    protected function applyPassword(User $user, mixed $password): ?JsonResponse
+    {
+        if (!is_string($password) || mb_strlen($password) < 8 || mb_strlen($password) > 4096) {
+            return $this->json(
+                ['errors' => ['password' => ['Password must be a string of at least 8 characters.']]],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        $user->setPassword($this->passwordHasher->hashPassword($user, $password));
+
+        return null;
     }
 
     protected function save(object $entity, int $status = Response::HTTP_OK): JsonResponse

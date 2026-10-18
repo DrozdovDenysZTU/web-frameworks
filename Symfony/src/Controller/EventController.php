@@ -11,11 +11,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/events', name: 'api_events_')]
 class EventController extends ApiController
 {
     #[Route('', name: 'index', methods: ['GET'])]
+    #[IsGranted('ROLE_CLIENT')]
     public function index(EventRepository $repository, Request $request): JsonResponse
     {
         return $this->paginate($repository->createQueryBuilder('e')->orderBy('e.startAt')->addOrderBy('e.id'), $request, [
@@ -32,12 +34,14 @@ class EventController extends ApiController
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted('ROLE_CLIENT')]
     public function show(Event $event): JsonResponse
     {
         return $this->json($event->toArray());
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function create(Request $request): JsonResponse
     {
         $event = new Event();
@@ -47,6 +51,7 @@ class EventController extends ApiController
     }
 
     #[Route('/{id}', name: 'update', requirements: ['id' => '\d+'], methods: ['PUT', 'PATCH'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function update(Event $event, Request $request): JsonResponse
     {
         $this->fill($event, $request->toArray());
@@ -55,6 +60,7 @@ class EventController extends ApiController
     }
 
     #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(Event $event): JsonResponse
     {
         return $this->remove($event);

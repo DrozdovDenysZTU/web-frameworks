@@ -10,11 +10,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/registrations', name: 'api_registrations_')]
 class RegistrationController extends ApiController
 {
     #[Route('', name: 'index', methods: ['GET'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function index(RegistrationRepository $repository, Request $request): JsonResponse
     {
         return $this->paginate($repository->createQueryBuilder('r')->orderBy('r.id'), $request, [
@@ -27,12 +29,14 @@ class RegistrationController extends ApiController
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function show(Registration $registration): JsonResponse
     {
         return $this->json($registration->toArray());
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function create(Request $request): JsonResponse
     {
         $registration = new Registration();
@@ -42,6 +46,7 @@ class RegistrationController extends ApiController
     }
 
     #[Route('/{id}', name: 'update', requirements: ['id' => '\d+'], methods: ['PUT', 'PATCH'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function update(Registration $registration, Request $request): JsonResponse
     {
         $this->fill($registration, $request->toArray());
@@ -50,6 +55,7 @@ class RegistrationController extends ApiController
     }
 
     #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(Registration $registration): JsonResponse
     {
         return $this->remove($registration);
