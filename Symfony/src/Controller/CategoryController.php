@@ -8,11 +8,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/categories', name: 'api_categories_')]
 class CategoryController extends ApiController
 {
     #[Route('', name: 'index', methods: ['GET'])]
+    #[IsGranted('ROLE_CLIENT')]
     public function index(CategoryRepository $repository, Request $request): JsonResponse
     {
         return $this->paginate($repository->createQueryBuilder('c')->orderBy('c.id'), $request, [
@@ -23,12 +25,14 @@ class CategoryController extends ApiController
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted('ROLE_CLIENT')]
     public function show(Category $category): JsonResponse
     {
         return $this->json($category->toArray());
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function create(Request $request): JsonResponse
     {
         $category = new Category();
@@ -38,6 +42,7 @@ class CategoryController extends ApiController
     }
 
     #[Route('/{id}', name: 'update', requirements: ['id' => '\d+'], methods: ['PUT', 'PATCH'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function update(Category $category, Request $request): JsonResponse
     {
         $this->fill($category, $request->toArray());
@@ -46,6 +51,7 @@ class CategoryController extends ApiController
     }
 
     #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(Category $category): JsonResponse
     {
         return $this->remove($category);

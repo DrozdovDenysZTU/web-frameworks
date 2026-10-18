@@ -8,11 +8,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/participants', name: 'api_participants_')]
 class ParticipantController extends ApiController
 {
     #[Route('', name: 'index', methods: ['GET'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function index(ParticipantRepository $repository, Request $request): JsonResponse
     {
         return $this->paginate($repository->createQueryBuilder('p')->orderBy('p.id'), $request, [
@@ -25,12 +27,14 @@ class ParticipantController extends ApiController
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function show(Participant $participant): JsonResponse
     {
         return $this->json($participant->toArray());
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function create(Request $request): JsonResponse
     {
         $participant = new Participant();
@@ -40,6 +44,7 @@ class ParticipantController extends ApiController
     }
 
     #[Route('/{id}', name: 'update', requirements: ['id' => '\d+'], methods: ['PUT', 'PATCH'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function update(Participant $participant, Request $request): JsonResponse
     {
         $this->fill($participant, $request->toArray());
@@ -48,6 +53,7 @@ class ParticipantController extends ApiController
     }
 
     #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(Participant $participant): JsonResponse
     {
         return $this->remove($participant);
