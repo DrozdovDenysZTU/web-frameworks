@@ -13,9 +13,13 @@ use Symfony\Component\Routing\Attribute\Route;
 class CategoryController extends ApiController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(CategoryRepository $repository): JsonResponse
+    public function index(CategoryRepository $repository, Request $request): JsonResponse
     {
-        return $this->list($repository->findAll());
+        return $this->paginate($repository->createQueryBuilder('c')->orderBy('c.id'), $request, [
+            'id' => ['id', self::FILTER_INT],
+            'name' => ['name', self::FILTER_LIKE],
+            'description' => ['description', self::FILTER_LIKE],
+        ]);
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]

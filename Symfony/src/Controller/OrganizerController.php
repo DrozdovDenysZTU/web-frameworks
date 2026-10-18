@@ -13,9 +13,14 @@ use Symfony\Component\Routing\Attribute\Route;
 class OrganizerController extends ApiController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(OrganizerRepository $repository): JsonResponse
+    public function index(OrganizerRepository $repository, Request $request): JsonResponse
     {
-        return $this->list($repository->findAll());
+        return $this->paginate($repository->createQueryBuilder('o')->orderBy('o.id'), $request, [
+            'id' => ['id', self::FILTER_INT],
+            'name' => ['name', self::FILTER_LIKE],
+            'email' => ['email', self::FILTER_LIKE],
+            'phone' => ['phone', self::FILTER_LIKE],
+        ]);
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]

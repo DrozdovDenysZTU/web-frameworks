@@ -13,13 +13,15 @@ class RegistrationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $registrations = Registration::with(self::RELATIONS)
-            ->when($request->query('event_id'), fn ($query, $id) => $query->where('event_id', $id))
-            ->when($request->query('participant_id'), fn ($query, $id) => $query->where('participant_id', $id))
-            ->when($request->query('status'), fn ($query, $status) => $query->where('status', $status))
-            ->get();
-
-        return response()->json($registrations);
+        return $this->paginate(Registration::with(self::RELATIONS)->orderBy('id'), $request, [
+            'id' => self::FILTER_INT,
+            'event_id' => self::FILTER_INT,
+            'participant_id' => self::FILTER_INT,
+            'status' => self::FILTER_EXACT,
+            'registered_at' => self::FILTER_DATE,
+            'created_at' => self::FILTER_DATE,
+            'updated_at' => self::FILTER_DATE,
+        ]);
     }
 
     public function store(Request $request): JsonResponse

@@ -13,9 +13,15 @@ use Symfony\Component\Routing\Attribute\Route;
 class ParticipantController extends ApiController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(ParticipantRepository $repository): JsonResponse
+    public function index(ParticipantRepository $repository, Request $request): JsonResponse
     {
-        return $this->list($repository->findAll());
+        return $this->paginate($repository->createQueryBuilder('p')->orderBy('p.id'), $request, [
+            'id' => ['id', self::FILTER_INT],
+            'first_name' => ['firstName', self::FILTER_LIKE],
+            'last_name' => ['lastName', self::FILTER_LIKE],
+            'email' => ['email', self::FILTER_LIKE],
+            'phone' => ['phone', self::FILTER_LIKE],
+        ]);
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]

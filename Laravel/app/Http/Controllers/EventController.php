@@ -12,15 +12,24 @@ class EventController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $events = Event::with(self::RELATIONS)
+        $query = Event::with(self::RELATIONS)
             ->withCount('registrations')
-            ->when($request->query('category_id'), fn ($query, $id) => $query->where('category_id', $id))
-            ->when($request->query('venue_id'), fn ($query, $id) => $query->where('venue_id', $id))
-            ->when($request->query('organizer_id'), fn ($query, $id) => $query->where('organizer_id', $id))
             ->orderBy('start_at')
-            ->get();
+            ->orderBy('id');
 
-        return response()->json($events);
+        return $this->paginate($query, $request, [
+            'id' => self::FILTER_INT,
+            'title' => self::FILTER_LIKE,
+            'description' => self::FILTER_LIKE,
+            'start_at' => self::FILTER_DATE,
+            'end_at' => self::FILTER_DATE,
+            'price' => self::FILTER_NUMBER,
+            'category_id' => self::FILTER_INT,
+            'venue_id' => self::FILTER_INT,
+            'organizer_id' => self::FILTER_INT,
+            'created_at' => self::FILTER_DATE,
+            'updated_at' => self::FILTER_DATE,
+        ]);
     }
 
     public function store(Request $request): JsonResponse
